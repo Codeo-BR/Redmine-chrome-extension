@@ -2,6 +2,16 @@
 
 var app = angular.module('RedmineExtension', []);
 
+app.filter('bytes', function() {
+  return function(bytes, precision) {
+    if (!bytes || isNaN(parseFloat(bytes)) || !isFinite(bytes)) return '0 bytes';
+    if (typeof precision === 'undefined') precision = 1;
+    var units = ['bytes', 'kB', 'MB', 'GB', 'TB', 'PB'],
+      number = Math.floor(Math.log(bytes) / Math.log(1024));
+    return (bytes / Math.pow(1024, Math.floor(number))).toFixed(precision) +  ' ' + units[number];
+  }
+});
+
 app.directive('timer', function(){
   return {
     restrict: 'E',
@@ -154,7 +164,7 @@ app.factory('RedmineAPI', ['$http', '$q', '$window', function($http, $q, $window
     },
 
     getIssue: function(id){
-      return this.request('/issues/' + id + '.json','','', function(data){
+      return this.request('/issues/' + id + '.json?include=attachments','','', function(data){
         return data.issue;
       });
     },

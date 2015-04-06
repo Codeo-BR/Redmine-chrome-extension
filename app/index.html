@@ -121,8 +121,17 @@
           </div>
         </div>
         <br />
-        <p style="white-space: pre-line;" ng-show="!action.stopped">{{issue.description}}</p>
-
+        <div ng-show="!action.stopped">
+          <p style="white-space: pre-line;">{{issue.description}}</p>
+          <div ng-show="issue.attachments.length">
+            <div class="h5">Anexos:</div>
+            <ul>
+              <li ng-repeat="attachment in issue.attachments">
+                <a href="{{attachment.content_url}}" target="_blank">{{attachment.filename}} - {{attachment.filesize | bytes}}</a>
+              </li>
+            </ul>
+          </div>
+        </div>
         <div ng-show="action.stopped">
           <div class="form-group">
             <label for="login">Comentários</label>
