@@ -75,7 +75,7 @@
 
           <tr ng-repeat="issue in issues" >
             <td><a ng-click="" href>{{issue.project.name}}</a></td>
-            <td><a ng-click="getIssue(issue.id);" href>{{issue.subject}}</a></td>
+            <td><a ng-click="getIssue(issue.id);" href>{{issue.id}}: {{issue.subject}}</a></td>
             <td>
               <div class="btn-group">
                 <button type="button" class="btn btn-default btn-xs dropdown-toggle " data-toggle="dropdown" aria-expanded="false">
@@ -98,28 +98,33 @@
       </div>
       <div ng-show="state.view == 'issue'">
         <div>
-          <span class="h3">{{issue.subject}}</span> <small>( {{issue.status.name}} )</small>
+          <span class="h4">{{issue.id}}: {{issue.subject}}</span> <small>( {{issue.status.name}} )</small>
 
         </div>
-        <div ng-show="!action.stopped">
-          <button type="button" class="btn btn-default btn-xs" ng-show='!action.timer' ng-click="listIssues();">
-            <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span>
-          </button>
-          <button type="button" class="btn btn-xs btn-success" ng-show='!action.timer' ng-click="getIssue(issue.id, true);">
-            <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
-          </button>
-          <button type="button" class="btn btn-xs btn-danger" ng-show='action.timer' ng-click="finalizeIssue();">
-            <span class="glyphicon glyphicon-stop" aria-hidden="true"></span>
-          </button>
+        <div>
+          <div ng-show="!action.stopped && !action.timer">
+            <button type="button" class="btn btn-default btn-xs" ng-click="listIssues();">
+              <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span>
+            </button>
+            <button type="button" class="btn btn-xs btn-success" ng-click="getIssue(issue.id, true);">
+              <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+            </button>
+            </div>
           </div>
-          <strong class="pull-right">
-            <timer start-timer="getTimer();" ng-show='action.timer'></timer>
-          </strong>
+          <div ng-show="!action.stopped && action.timer">
+            <button type="button" class="btn btn-xs btn-danger" ng-click="finalizeIssue();">
+              <span class="glyphicon glyphicon-stop" aria-hidden="true"></span>
+            </button>
+
+            <strong class="pull-right">
+              <timer start-timer="getTimer();" ></timer>
+            </strong>
+          </div>
         </div>
+        <br />
         <p style="white-space: pre-line;" ng-show="!action.stopped">{{issue.description}}</p>
 
         <div ng-show="action.stopped">
-
           <div class="form-group">
             <label for="login">Comentários</label>
             <textarea class="form-control" rows="3" placeholder="Descrição" ng-model="action.message"></textarea>
