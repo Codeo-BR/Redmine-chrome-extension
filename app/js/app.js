@@ -165,9 +165,9 @@ app.factory('RedmineAPI', ['$http', '$q', '$window', function($http, $q, $window
       });
     },
 
-    getIssueTrackers: function(){
-      return this.request('/trackers.json','','', function(data){
-        return data.trackers;
+    getIssueActivities: function(){
+      return this.request('/enumerations/time_entry_activities.json','','', function(data){
+        return data.time_entry_activities;
       });
     },
 
@@ -241,16 +241,16 @@ app.controller('IssuesCtrl', ['$scope', 'RedmineAPI', function($scope, RedmineAP
   $scope.finalizeIssue = function(){
     $scope.action.stopped= true;
     $scope.action.total = getConvertedTimer($scope.getTimer());
-    if($scope.trackers[0].default_status){
-      $scope.action.tracker = $scope.trackers[0].default_status;
+    if($scope.activities[0].default_status){
+      $scope.action.activity = $scope.activities[0].default_status;
     }else {
-      $scope.action.tracker = $scope.trackers[0];
+      $scope.action.activity = $scope.activities[0];
     }
   };
 
   $scope.logTime = function(){
     var log = $scope.action;
-    RedmineAPI.createTimeEntry(log.id, log.total, log.tracker.id, log.message).then(function(){
+    RedmineAPI.createTimeEntry(log.id, log.total, log.activity.id, log.message).then(function(){
       $scope.listIssues(true);
     });
   };
@@ -302,7 +302,7 @@ app.controller('MainCtrl', [ '$scope', 'RedmineAPI', 'ChromeStorageAPI', '$windo
   };
   $scope.config = {};
   $scope.statuses = {};
-  $scope.trackers = {};
+  $scope.activities = {};
 
   var updateState = function(obj){
     $scope.state.obj = obj;
@@ -329,8 +329,8 @@ app.controller('MainCtrl', [ '$scope', 'RedmineAPI', 'ChromeStorageAPI', '$windo
 
         RedmineAPI.getIssueStatuses().then(function(st){
           $scope.statuses = st;
-          RedmineAPI.getIssueTrackers().then(function(t){
-            $scope.trackers = t;
+          RedmineAPI.getIssueActivities().then(function(t){
+            $scope.activities = t;
           });
           ChromeStorageAPI.get('state').then(function(s){
             if(!s || !s.view){

@@ -99,7 +99,6 @@
       <div ng-show="state.view == 'issue'">
         <div>
           <span class="h4">{{issue.id}}: {{issue.subject}}</span> <small>( {{issue.status.name}} )</small>
-
         </div>
         <div>
           <div ng-show="!action.stopped && !action.timer">
@@ -134,12 +133,12 @@
             <input type="text" class="col-md-6" ng-model="action.total">
             <div class="btn-group col-md-3">
               <button type="button" class="btn btn-link btn-xs dropdown-toggle " data-toggle="dropdown" aria-expanded="false">
-                {{action.tracker.name}}
+                {{action.activity.name}}
                 <span class="caret"></span>
               </button>
               <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                <li ng-repeat="tracker in trackers">
-                  <a href ng-click="action.tracker = tracker">{{tracker.name}}</a>
+                <li ng-repeat="activity in activities">
+                  <a href ng-click="action.activity = activity">{{activity.name}}</a>
                 </li>
               </ul>
             </div>
