@@ -134,11 +134,8 @@ app.factory('RedmineAPI', ['$http', '$q', '$window', function($http, $q, $window
         }else
           deferred.resolve(r);
       })
-      .error(function(r){
-        if(cb){
-          deferred.reject(cb(r));
-        }else
-          deferred.reject(r);
+      .error(function(er){
+          deferred.reject(er); 
       });
 
       return deferred.promise;
