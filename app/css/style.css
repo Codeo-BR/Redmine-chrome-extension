@@ -1,0 +1,13 @@
+body {
+  width: 600px;
+  height: 400px;
+  padding: 20px;
+  padding-top: 70px;
+}
+
+.navbar-right {
+  float: right;
+  margin-right: 15px;
+}
+
+

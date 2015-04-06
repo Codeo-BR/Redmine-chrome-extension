@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html ng-app="RedmineExtension" ng-csp>
+
+  <head>
+    <link rel="stylesheet" href="css/style.css" type="text/css" />
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css" type=" text/css">
+    <link rel="stylesheet" href="bower_components/angular/angular-csp.css" type="text/css">
+
+    <meta charset="UTF-8">
+
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="bower_components/angular/angular.min.js"></script> 
+    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="js/app.js"></script>
+  </head>
+  <body ng-controller="MainCtrl" ng-init="init();">
+
+    <div class="alert alert-danger" role="alert" ng-show="error">
+      <button type="button" class="close" aria-label="Close"><span aria-hidden="true" ng-click="error = ''">&times;</span></button>
+      {{error}}
+      <strong><a href="{{config.baseURL}}/users/current.json" target="_blank" ng-show="error && config.useCookies">Autenticar</a></strong>
+    </div>
+    <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">
+            <img src="icon.png" width="24px"/>
+          </a>
+          <a class="navbar-brand" href="#">Redmine</a>
+          <button type="button" class="btn btn-default navbar-btn navbar-right" ng-click="logout();" ng-show="state.view">
+            <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <div id="login" ng-show="!state.view">
+      <div class="form-group">
+        <label for="login">Base URL</label>
+        <input type="text" class="form-control" id="login" placeholder="Base URL" ng-model="config.baseURL">
+      </div>
+      
+      <div class="form-group pull-left" style="width: 45%;" ng-show="!config.useAPIKey">
+        <label for="username">Username</label>
+        <input type="text" class="form-control" id="username" placeholder="Username" ng-model="config.username" ng-disabled="config.useCookies">
+      </div>
+      <div class="form-group pull-right" style="width: 50%;" ng-show="!config.useAPIKey">
+        <label for="password">Password</label>
+        <input type="password" class="form-control" id="password" placeholder="Password" ng-model="config.password" ng-disabled="config.useCookies">
+      </div>
+      <div class="form-group" ng-show="config.useAPIKey">
+        <label for="apiKey">API Key</label>
+        <input type="password" class="form-control" id="apiKey" placeholder="API Key" ng-model="config.apiKey" ng-disabled="config.useCookies">
+      </div>
+      <div class="pull-left">
+        <a class="btn btn-xs btn-link" ng-click="config.useAPIKey = true" ng-show="!config.useAPIKey" ng-disabled="config.useCookies">Utilizar API Key</a>
+        <a class="btn btn-xs btn-link" ng-click="config.useAPIKey = false" ng-show="config.useAPIKey" ng-disabled="config.useCookies">Utilizar Usuário e Senha</a>
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" ng-model="config.useCookies" ng-click="config.apiKey = '';"> Utilizar Cookies (Necessário estar logado através do Chrome)<br />
+          </label>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary pull-right" ng-click="login();">Iniciar Sessão</button>
+    </div>
+    <div ng-show="state.view" ng-controller="IssuesCtrl">
+
+      <div ng-show="state.view == 'listIssues'">
+        <table class="table">
+          <tr>
+            <td><strong>Projeto</strong></td>
+            <td><strong>Tarefa</strong></td>
+            <td><strong>Status</strong></td>
+          </tr>
+
+          <tr ng-repeat="issue in issues" >
+            <td><a ng-click="" href>{{issue.project.name}}</a></td>
+            <td><a ng-click="getIssue(issue.id);" href>{{issue.subject}}</a></td>
+            <td>
+              <div class="btn-group">
+                <button type="button" class="btn btn-default btn-xs dropdown-toggle " data-toggle="dropdown" aria-expanded="false">
+                  {{issue.status.name}}
+                  <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-right" role="menu" ng-init="workflow = getWorkflow(issue.status.id)">
+                  <li ng-repeat="status in workflow | filter: {is_closed: '!true'}">
+                    <a href ng-click="updateIssueStatus(issue.id, status.id)">{{status.name}}</a>
+                  </li>
+                  <li class="divider"></li>
+                  <li ng-repeat="status in workflow | filter: {is_closed: true}">
+                    <a href ng-click="updateIssueStatus(issue.id, status.id)">{{status.name}}</a>
+                  </li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+        </table>        
+      </div>
+      <div ng-show="state.view == 'issue'">
+        <div>
+          <span class="h3">{{issue.subject}}</span> <small>( {{issue.status.name}} )</small>
+
+        </div>
+        <div ng-show="!action.stopped">
+          <button type="button" class="btn btn-default btn-xs" ng-show='!action.timer' ng-click="listIssues();">
+            <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span>
+          </button>
+          <button type="button" class="btn btn-xs btn-success" ng-show='!action.timer' ng-click="getIssue(issue.id, true);">
+            <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+          </button>
+          <button type="button" class="btn btn-xs btn-danger" ng-show='action.timer' ng-click="finalizeIssue();">
+            <span class="glyphicon glyphicon-stop" aria-hidden="true"></span>
+          </button>
+          </div>
+          <strong class="pull-right">
+            <timer start-timer="getTimer();" ng-show='action.timer'></timer>
+          </strong>
+        </div>
+        <p style="white-space: pre-line;" ng-show="!action.stopped">{{issue.description}}</p>
+
+        <div ng-show="action.stopped">
+
+          <div class="form-group">
+            <label for="login">Comentários</label>
+            <textarea class="form-control" rows="3" placeholder="Descrição" ng-model="action.message"></textarea>
+          </div>
+          <div class="form-group row">
+            <label class="col-md-3">Tempo total</label>
+            <input type="text" class="col-md-6" ng-model="action.total">
+            <div class="btn-group col-md-3">
+              <button type="button" class="btn btn-link btn-xs dropdown-toggle " data-toggle="dropdown" aria-expanded="false">
+                {{action.tracker.name}}
+                <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                <li ng-repeat="tracker in trackers">
+                  <a href ng-click="action.tracker = tracker">{{tracker.name}}</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm pull-right" ng-disabled="!action.message || !action.total" ng-click="logTime();">Logar Horas</button>
+          <button type="submit" class="btn btn-link btn-sm pull-right" ng-click="action.message = ''; action.stopped = false; getIssue();">Cancelar</button>
+          <button type="submit" class="btn btn-danger btn-sm" ng-click="listIssues(true);">Não Logar Horas</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
