@@ -333,7 +333,7 @@ app.controller('MainCtrl', [ '$scope', 'RedmineAPI', 'ChromeStorageAPI', '$windo
             $scope.trackers = t;
           });
           ChromeStorageAPI.get('state').then(function(s){
-            if(!s.view){
+            if(!s || !s.view){
               $scope.$broadcast('listIssues');
             }else {
               $scope.state = s;
