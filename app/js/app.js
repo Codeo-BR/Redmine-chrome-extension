@@ -21,24 +21,18 @@ app.directive('timer', function(){
     controller: function($scope, $interval){
       var timeout;
       $scope.hours = 0;
-      $scope.minutes = 0;
-      $scope.secounds =  0;
-      $scope.milisecounds = 0;
+      $scope.time = 0;
 
       var convertTimer = function(time){
         $scope.hours = Math.trunc(time / 3600000);
-        time = time % 3600000;
-        $scope.minutes = Math.trunc(time / 60000);
-        time = time % 60000;
-        $scope.secounds = Math.trunc(time / 1000);
-        $scope.milisecounds = time % 1000;
+        $scope.time = time % 3600000;
       };
 
       timeout = $interval(function(){
         convertTimer($scope.start);
       }, 1000);
     },
-    template: '{{hours}}:{{minutes}}:{{secounds}}'
+    template: "{{hours}}:{{time|date:'mm:ss'}}"
   }
 });
 
