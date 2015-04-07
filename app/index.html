@@ -66,34 +66,50 @@
     <div ng-show="state.view" ng-controller="IssuesCtrl">
 
       <div ng-show="state.view == 'listIssues'">
-        <table class="table">
-          <tr>
-            <td><strong>Projeto</strong></td>
-            <td><strong>Tarefa</strong></td>
-            <td><strong>Status</strong></td>
-          </tr>
-
-          <tr ng-repeat="issue in issues" >
-            <td><a ng-click="" href>{{issue.project.name}}</a></td>
-            <td><a ng-click="getIssue(issue.id);" href>{{issue.id}}: {{issue.subject}}</a></td>
-            <td>
-              <div class="btn-group">
-                <button type="button" class="btn btn-default btn-xs dropdown-toggle " data-toggle="dropdown" aria-expanded="false">
-                  {{issue.status.name}}
-                  <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-right" role="menu" ng-init="workflow = getWorkflow(issue.status.id)">
-                  <li ng-repeat="status in workflow | filter: {is_closed: '!true'}">
-                    <a href ng-click="updateIssueStatus(issue.id, status.id)">{{status.name}}</a>
-                  </li>
-                  <li class="divider"></li>
-                  <li ng-repeat="status in workflow | filter: {is_closed: true}">
-                    <a href ng-click="updateIssueStatus(issue.id, status.id)">{{status.name}}</a>
-                  </li>
-                </ul>
-              </div>
-            </td>
-          </tr>
+        <div class="input-group input-group-sm">
+          <span class="input-group-btn">
+            <button class="btn" type="button" disabled>
+              <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+            </button>
+          </span>
+          <input type="text" class="form-control" placeholder="" ng-model="search">
+          <span class="input-group-btn" ng-show="search" ng-click="search = ''">
+            <button class="btn btn-default" type="button">
+              <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            </button>
+          </span>
+        </div>
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <td><strong>Projeto</strong></td>
+              <td><strong>Tarefa</strong></td>
+              <td><strong>Status</strong></td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="issue in issues | filter:search" >
+              <td><a ng-click="$parent.search = issue.project.name" href>{{issue.project.name}}</a></td>
+              <td><a ng-click="getIssue(issue.id);" href>{{issue.id}}: {{issue.subject}}</a></td>
+              <td>
+                <div class="btn-group">
+                  <button type="button" class="btn btn-default btn-xs dropdown-toggle " data-toggle="dropdown" aria-expanded="false">
+                    {{issue.status.name}}
+                    <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-right" role="menu" ng-init="workflow = getWorkflow(issue.status.id)">
+                    <li ng-repeat="status in workflow | filter: {is_closed: '!true'}">
+                      <a href ng-click="updateIssueStatus(issue.id, status.id)">{{status.name}}</a>
+                    </li>
+                    <li class="divider"></li>
+                    <li ng-repeat="status in workflow | filter: {is_closed: true}">
+                      <a href ng-click="updateIssueStatus(issue.id, status.id)">{{status.name}}</a>
+                    </li>
+                  </ul>
+                </div>
+              </td>
+            </tr>
+          </tbody>
         </table>        
       </div>
       <div ng-show="state.view == 'issue'">
