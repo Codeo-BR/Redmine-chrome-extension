@@ -67,13 +67,11 @@
 
       <div ng-show="state.view == 'listIssues'">
         <div class="input-group input-group-sm">
-          <span class="input-group-btn">
-            <button class="btn" type="button" disabled>
-              <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
-            </button>
+          <span class="input-group-addon">
+            Filtrar Tarefas:
           </span>
           <input type="text" class="form-control" placeholder="" ng-model="search">
-          <span class="input-group-btn" ng-show="search" ng-click="search = ''">
+          <span class="input-group-btn" ng-click="search = ''">
             <button class="btn btn-default" type="button">
               <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
             </button>
