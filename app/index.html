@@ -173,7 +173,8 @@
           </div>
         </div>
         <br />
-        <div ng-show="!action.stopped">
+        <div ng-show="!action.stopped && state.view == 'issue'">
+          <p style="white-space: pre-line;"><strong>Tempo Total Gasto:</strong> {{issue.spent_hours}} Horas</p>
           <p style="white-space: pre-line;">{{issue.description}}</p>
           <div ng-show="issue.attachments.length">
             <div class="h5">Anexos:</div>
