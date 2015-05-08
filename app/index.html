@@ -150,7 +150,9 @@
       </div>
       <div ng-show="state.view == 'issue'">
         <div>
-          <span class="h4">{{issue.id}}: {{issue.subject}}</span> <small>( {{issue.status.name}} )</small>
+          <span class="h4">{{issue.id}}: {{issue.subject}}</span> 
+          <a ng-href="{{config.baseURL}}/issues/{{issue.id}}" target="blank"><span class="glyphicon glyphicon-share" aria-hidden="true"></span></a>
+          <small>( {{issue.status.name}} )</small>
         </div>
         <div>
           <div ng-show="!action.stopped && !action.timer">
@@ -172,11 +174,30 @@
             </strong>
           </div>
         </div>
-        <br />
         <div ng-show="!action.stopped && state.view == 'issue'">
-          <p style="white-space: pre-line;"><strong>Tempo Total Gasto:</strong> {{issue.spent_hours}} Horas</p>
-          <p style="white-space: pre-line;">{{issue.description}}</p>
-          <div ng-show="issue.attachments.length">
+          <p style="white-space: pre-line;" ng-show="issue.spent_hours">
+            <strong>Tempo Total Gasto:</strong> {{issue.spent_hours}} Horas <small><a href ng-click="listTimeEntries(issue.id);" ng-show="!issue.time_entries.length">( Exibir )</a></small><small><a href ng-click="issue.time_entries = []" ng-show="issue.time_entries.length">( Ocultar )</a></small>
+          </p>
+          <table class="table table-hover" ng-show="issue.time_entries.length">
+            <thead>
+              <tr>
+                <td><strong>Atividade</strong></td>
+                <td><strong>Comentários</strong></td>
+                <td><strong>Data</strong></td>
+                <td><strong>Horas</strong></td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="time in issue.time_entries" >
+                <td>{{time.activity.name}}</td>
+                <td>{{time.comments}}</td>
+                <td>{{time.spent_on}}</td>
+                <td>{{time.hours}}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p style="white-space: pre-line;" ng-show="!issue.time_entries.length">{{issue.description}}</p>
+          <div ng-show="issue.attachments.length && !issue.time_entries.length">
             <div class="h5">Anexos:</div>
             <ul>
               <li ng-repeat="attachment in issue.attachments">

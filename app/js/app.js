@@ -152,7 +152,7 @@ app.factory('RedmineAPI', ['$http', '$q', '$window', function($http, $q, $window
     },
 
     getIssues: function(){
-      return this.request('/issues.json?assigned_to_id=me','','', function(data){
+      return this.request('/issues.json?assigned_to_id=me&limit=100','','', function(data){
         return data.issues;
       });
     },
@@ -179,6 +179,12 @@ app.factory('RedmineAPI', ['$http', '$q', '$window', function($http, $q, $window
       return this.request('/issues/' + id + '.json','PUT', JSON.stringify({issue: obj}));
     },
 
+    getTimeEntries: function(id){
+      return this.request('/issues/' + id + '/time_entries.json?limit=100', '', '', function(data){
+        return data.time_entries;
+      });
+    },
+
     createTimeEntry: function(issueId, spentHours, activity, comments){
       var obj = {
         issue_id: issueId,
@@ -196,6 +202,7 @@ app.controller('IssuesCtrl', ['$scope', 'RedmineAPI', function($scope, RedmineAP
   $scope.issues = [];
   $scope.issue = {};
   $scope.action = {};
+  $scope.time_entries = [];
 
   var getConvertedTimer = function(totalInMiliseconds){
     var h = Math.trunc(totalInMiliseconds / 3600000);
@@ -210,7 +217,13 @@ app.controller('IssuesCtrl', ['$scope', 'RedmineAPI', function($scope, RedmineAP
 
   $scope.getTimer = function(){
     return ((new Date().getTime()) - $scope.action.timer);
-  }
+  };
+
+  $scope.listTimeEntries = function(id){
+    RedmineAPI.getTimeEntries(id).then(function(r){
+      $scope.issue.time_entries = r;
+    });
+  };
 
   $scope.listIssues = function(cleanAction){
     $scope.issue = {};
@@ -219,9 +232,10 @@ app.controller('IssuesCtrl', ['$scope', 'RedmineAPI', function($scope, RedmineAP
     });
 
     $scope.$emit('changeView','listIssues');
-    if(cleanAction)
+    if(cleanAction){
       $scope.action = {};
       $scope.$emit('changeAction', {});
+    }
   };
 
   $scope.getIssue = function(id, startTimer){
