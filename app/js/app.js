@@ -152,7 +152,7 @@ app.factory('RedmineAPI', ['$http', '$q', '$window', function($http, $q, $window
     },
 
     getIssues: function(){
-      return this.request('/issues.json?assigned_to_id=me','','', function(data){
+      return this.request('/issues.json?assigned_to_id=me&limit=100','','', function(data){
         return data.issues;
       });
     },
@@ -179,6 +179,12 @@ app.factory('RedmineAPI', ['$http', '$q', '$window', function($http, $q, $window
       return this.request('/issues/' + id + '.json','PUT', JSON.stringify({issue: obj}));
     },
 
+    getTimeEntries: function(id){
+      return this.request('/issues/' + id + '/time_entries.json?limit=100', '', '', function(data){
+        return data.time_entries;
+      });
+    },
+
     createTimeEntry: function(issueId, spentHours, activity, comments){
       var obj = {
         issue_id: issueId,
@@ -196,6 +202,7 @@ app.controller('IssuesCtrl', ['$scope', 'RedmineAPI', function($scope, RedmineAP
   $scope.issues = [];
   $scope.issue = {};
   $scope.action = {};
+  $scope.time_entries = [];
 
   var getConvertedTimer = function(totalInMiliseconds){
     var h = Math.trunc(totalInMiliseconds / 3600000);
@@ -210,7 +217,13 @@ app.controller('IssuesCtrl', ['$scope', 'RedmineAPI', function($scope, RedmineAP
 
   $scope.getTimer = function(){
     return ((new Date().getTime()) - $scope.action.timer);
-  }
+  };
+
+  $scope.listTimeEntries = function(id){
+    RedmineAPI.getTimeEntries(id).then(function(r){
+      $scope.issue.time_entries = r;
+    });
+  };
 
   $scope.listIssues = function(cleanAction){
     $scope.issue = {};
@@ -219,9 +232,10 @@ app.controller('IssuesCtrl', ['$scope', 'RedmineAPI', function($scope, RedmineAP
     });
 
     $scope.$emit('changeView','listIssues');
-    if(cleanAction)
+    if(cleanAction){
       $scope.action = {};
       $scope.$emit('changeAction', {});
+    }
   };
 
   $scope.getIssue = function(id, startTimer){
@@ -245,11 +259,8 @@ app.controller('IssuesCtrl', ['$scope', 'RedmineAPI', function($scope, RedmineAP
   $scope.finalizeIssue = function(){
     $scope.action.stopped= true;
     $scope.action.total = getConvertedTimer($scope.getTimer());
-    if($scope.activities[0].default_status){
-      $scope.action.activity = $scope.activities[0].default_status;
-    }else {
-      $scope.action.activity = $scope.activities[0];
-    }
+    $scope.action.activity = $scope.defaultActivity;
+    
   };
 
   $scope.logTime = function(){
@@ -307,10 +318,11 @@ app.controller('MainCtrl', [ '$scope', 'RedmineAPI', 'ChromeStorageAPI', '$windo
   $scope.config = {};
   $scope.statuses = {};
   $scope.activities = {};
+  $scope.defaultActivity = {};
+  $scope.loading = true;
 
   var updateState = function(obj){
     $scope.state.obj = obj;
-
     ChromeStorageAPI.set('state', $scope.state);
   };
 
@@ -335,25 +347,52 @@ app.controller('MainCtrl', [ '$scope', 'RedmineAPI', 'ChromeStorageAPI', '$windo
           $scope.statuses = st;
           RedmineAPI.getIssueActivities().then(function(t){
             $scope.activities = t;
+            $scope.defaultActivity = $scope.getDefaultActivity();
           });
           ChromeStorageAPI.get('state').then(function(s){
             if(!s || !s.view){
-              $scope.$broadcast('listIssues');
+              if($scope.config.userPref){
+                $scope.$broadcast('listIssues');  
+              }else {
+                $scope.state.view = 'config';
+              }
             }else {
               $scope.state = s;
               $scope.$broadcast(s.view, s.obj);
             }
+            $scope.loading = false;
           });
         }, function(e){
           $scope.error = 'Não foi possivel autenticar no Redmine';
+          $scope.loading = false;
         });
+      }else {
+        $scope.loading = false;
       }
     });
   };
 
   $scope.init = function(){
+    $scope.loading = true;
     ChromeStorageAPI.useSync();
     checkAuth();
+  };
+
+  $scope.getDefaultActivity = function(){
+    if($scope.config.userPref && $scope.config.userPref.defaultActivity){
+      return $scope.config.userPref.defaultActivity;
+    }else if($scope.activities[0].default_status){
+      return $scope.activities[0].default_status;
+    }else {
+      return $scope.activities[0];
+    }
+  };
+
+  $scope.setDefaultActivity = function(activity){
+    $scope.config.userPref = {
+      defaultActivity : activity
+    }
+    ChromeStorageAPI.set('config', $scope.config);
   };
 
   $scope.logout = function(){
@@ -368,6 +407,7 @@ app.controller('MainCtrl', [ '$scope', 'RedmineAPI', 'ChromeStorageAPI', '$windo
   };
 
   $scope.login = function(){
+    $scope.loading = true;
     $scope.error = '';
     ChromeStorageAPI.set('config', $scope.config);
     checkAuth();
